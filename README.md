@@ -18,7 +18,7 @@ interstate.execute(my_job, host = "ssh://jeremy@my-remote-computer")
 
 ```
 
-#### More examples
+#### Larger Example
 
 Suppose we wish to factor a large number, and somehow think that brute force is the best option. We thus decide to do the following:
 
@@ -49,6 +49,22 @@ def parallel_factor(number):
   interstate.execute(process_factors, hosts = hosts)
 
 parallel_factor(1000000007)
+```
+
+#### Firewalled Cluster Operation
+
+If the nodes you are using are behind a cluster and require first SSH'ing to a head node, you might find the following snippet helpful. It uses the `via` option to forward a connection to the given host and port.
+
+```python
+
+import interstate
+
+def test_forwarded_connection():
+  print "It works!"
+  
+interstate.execute(test_forwarded_connection,
+  host = 'ssh://privateuser@inner-node.local',
+  via = 'ssh://publicuser@head-node.very-large-cluster.1e100.net')
 ```
 
 #### License

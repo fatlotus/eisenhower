@@ -107,7 +107,7 @@ sys.stdout.close()
       return (True, None)
   
   @classmethod
-  def establish_ssh_connection(self, user, host, port = None):
+  def establish_ssh_connection(self, user, host, port = None, via = None):
     """
     Creates and returns a SSH Connection to the server on the given
     host and port. This method assumes that passwordless SSH
@@ -119,8 +119,15 @@ sys.stdout.close()
     else:
       netloc = host
     
+    args = [ '/usr/bin/env' ]
+    
+    if via: # Allows connection by proxy.
+      args.extend([ 'ssh', '-p', str(via[1] or 22), via[0] ])
+    
+    args.extend([ 'ssh', '-p', str(port or 22), netloc, 'python', '-u' ])
+    
     command = subprocess.Popen( # This assumes that Python is in the PATH.
-      args = [ '/usr/bin/env', 'ssh', '-p', str(port or 22), netloc, 'python', '-u' ],
+      args = args,
       stdin = subprocess.PIPE,
       stdout = subprocess.PIPE
     )
@@ -131,7 +138,7 @@ sys.stdout.close()
     # Initialize a connection over the given stream.
     return Connection(output = command.stdout, input = command.stdin)
 
-def execute(function, host = None, hosts = [ ]):
+def execute(function, host = None, hosts = [ ], via = None):
   """
   Executes the given function on each of the hosts specified in the 
   "hosts" array, or just on the single "host" specified.
@@ -145,6 +152,14 @@ def execute(function, host = None, hosts = [ ]):
   if len(hosts) == 0:
     raise ValueError, "Must run on at least one host."
   
+  if type(via) in (str, unicode):
+    result = urlparse.urlparse(via)
+    
+    if result.scheme != 'ssh':
+      raise ValueError, "Can only forward via SSH."
+    
+    via = ('%s@%s' % (result.username, result.hostname), result.port))
+  
   connections = [ ]
   
   for host_index, host in enumerate(hosts):
@@ -157,6 +172,7 @@ def execute(function, host = None, hosts = [ ]):
       user = result.username,
       host = result.hostname,
       port = result.port,
+      via = via
     )
     
     # Prepare some basic information for the new job.
