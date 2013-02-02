@@ -163,9 +163,12 @@ def execute(function, host = None, hosts = [ ]):
     environment = dict()
     environment["current_host"] = host
     environment["hosts"] = hosts
-
+    
     environment["host_number"] = host_index
     environment["total_hosts"] = len(hosts)
+    
+    environment["start_slice"] = float(host_index) / len(hosts)
+    environment["end_slice"]   = float(host_index) / len(hosts)
     
     connection.send_function(function, environment)
     
