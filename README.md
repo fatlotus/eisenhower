@@ -8,10 +8,9 @@ For example:
 
 import interstate
 
-def my_job():
+def my_job(environ):
   for i in xrange(0, 100):
     thread.sleep(1)
-    print "Processing..."
 
 interstate.execute(my_job, host = "ssh://jeremy@my-remote-computer")
   # Could also be ..., hosts = [ "ssh://...", "ssh://..." ], to run on

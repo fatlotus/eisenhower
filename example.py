@@ -3,11 +3,11 @@ import interstate
 def main():
   closure_test = "Jeremy"
   
-  def job():
+  def job(environ):
     import time
     for i in xrange(0, 10):
       time.sleep(1)
-      print "Hello, %s!" % closure_test
+      print "%s | Hello, %s!" % (environ['current_host'], closure_test)
     return 42
   
   interstate.execute(job, hosts = [ 'ssh://localhost', 'ssh://jeremy@some-remote-server' ])

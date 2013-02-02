@@ -4,6 +4,8 @@ import atexit
 import base64
 import select
 import urlparse
+import pickle
+import sys
 
 class Connection(object):
   """
@@ -21,7 +23,7 @@ class Connection(object):
     self.output = output
     self.consumed = False
   
-  def send_function(self, method):
+  def send_function(self, method, *vargs, **dargs):
     """
     Serializes the given callable object and sends it over the wire,
     returning any results present in evaluation.
@@ -34,6 +36,7 @@ class Connection(object):
     
     template = """
 
+import pickle
 import marshal
 import base64
 import types
@@ -42,12 +45,15 @@ import sys
 def make_cell(x):
   return (lambda: x).func_closure[0]
 
+vargs = pickle.loads(%(vargs)s)
+dargs = pickle.loads(%(dargs)s)
+
 code = marshal.loads(%(code)s)
 closure = %(closure)s
 tuple_of_cells = tuple( make_cell(x) for x in closure ) if closure else None
 function = types.FunctionType(code, globals(), %(name)s, %(defaults)s, tuple_of_cells)
 function.__module__ = %(module)s
-result = function()
+result = function(*vargs, **dargs)
 sys.stdout.write(base64.b64encode(marshal.dumps(result)))
 sys.stdout.close()
 
@@ -56,7 +62,10 @@ sys.stdout.close()
       name = repr(method.func_name),
       module = repr(method.__module__),
       defaults = repr(method.func_defaults),
-      closure = repr([ x.cell_contents for x in method.func_closure ]) if method.func_closure else "None"
+      closure = repr([ x.cell_contents for x in method.func_closure ]) if method.func_closure else "None",
+      
+      vargs = repr(pickle.dumps(vargs)),
+      dargs = repr(pickle.dumps(dargs))
     )
     
     self.input.write(template)
@@ -78,9 +87,14 @@ sys.stdout.close()
     # N.B.: This may block if lines are too long!
     read = self.output.readline()
     
-    if read[-1] != "\n":
+    if read[-1:] != "\n":
        # We're done with this channel, so pack up the 
        # return value and shut down.
+      
+      if read == "":
+        sys.stderr.write("(connection terminates)\n")
+        sys.stderr.flush()
+        return (False, None)
       
       return_value = marshal.loads(base64.b64decode(read))
       self.output.close()
@@ -133,7 +147,7 @@ def execute(function, host = None, hosts = [ ]):
   
   connections = [ ]
   
-  for host in hosts:
+  for host_index, host in enumerate(hosts):
     result = urlparse.urlparse(host, scheme = 'ssh')
     
     if result.scheme != 'ssh':
@@ -144,7 +158,16 @@ def execute(function, host = None, hosts = [ ]):
       host = result.hostname,
       port = result.port,
     )
-    connection.send_function(function)
+    
+    # Prepare some basic information for the new job.
+    environment = dict()
+    environment["current_host"] = host
+    environment["hosts"] = hosts
+
+    environment["host_number"] = host_index
+    environment["total_hosts"] = len(hosts)
+    
+    connection.send_function(function, environment)
     
     connections.append(connection)
   
