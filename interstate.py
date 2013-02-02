@@ -158,7 +158,7 @@ def execute(function, host = None, hosts = [ ], via = None):
     if result.scheme != 'ssh':
       raise ValueError, "Can only forward via SSH."
     
-    via = ('%s@%s' % (result.username, result.hostname), result.port))
+    via = ('%s@%s' % (result.username, result.hostname), result.port)
   
   connections = [ ]
   

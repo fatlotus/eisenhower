@@ -1,6 +1,6 @@
 ## Interstate
 
-This project is a job execution helper that allows people to very easily run functions on remote computers.
+This project is a basic job execution helper. It that allows people to better run in-line functions and closures on remote computers.
 
 For example:
 
@@ -20,7 +20,7 @@ interstate.execute(my_job, host = "ssh://jeremy@my-remote-computer")
 
 #### Larger Example
 
-Suppose we wish to factor a large number, and somehow think that brute force is the best option. We thus decide to do the following:
+Suppose we wish to factor a large number, and have significant compute power to waste. We thus decide to do the following:
 
 ```python
 
@@ -53,7 +53,7 @@ parallel_factor(1000000007)
 
 #### Firewalled Cluster Operation
 
-If the nodes you are using are behind a cluster and require first SSH'ing to a head node, you might find the following snippet helpful. It uses the `via` option to forward a connection to the given host and port.
+If the nodes you are using are behind a firewall and require first connecting to a head node, you might find the following snippet helpful. It uses the `via` option to forward a connection to the given host and port before connecting to the destination.
 
 ```python
 
