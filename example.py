@@ -1,4 +1,4 @@
-import interstate
+import eisenhower
 
 def main():
   closure_test = "Jeremy"
@@ -10,7 +10,7 @@ def main():
       print "%s | Hello, %s!" % (environ['current_host'], closure_test)
     return 42
   
-  interstate.execute(job, hosts = [ 'ssh://localhost', 'ssh://jeremy@some-remote-server' ])
+  eisenhower.execute(job, hosts = [ 'ssh://localhost', 'ssh://jeremy@some-remote-server' ])
 
 if __name__ == '__main__':
   main()

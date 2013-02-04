@@ -1,4 +1,4 @@
-## Interstate
+## Eisenhower
 
 This project is a basic job execution helper. It that allows people to better run in-line functions and closures on remote computers.
 
@@ -6,14 +6,14 @@ For example:
 
 ```python
 
-import interstate
+import eisenhower
 import time
 
 def my_job(environ):
   for i in xrange(0, 100):
     time.sleep(1)
 
-interstate.execute(my_job, host = "ssh://jeremy@my-remote-computer")
+eisenhower.execute(my_job, host = "ssh://jeremy@my-remote-computer")
   # Could also be ..., hosts = [ "ssh://...", "ssh://..." ], to run on
   # multiple hosts in parallel.
 
@@ -25,7 +25,7 @@ Suppose we wish to factor a large number, and have significant compute power to 
 
 ```python
 
-import interstate
+import eisenhower
 import math
 
 def parallel_factor(number):
@@ -47,7 +47,7 @@ def parallel_factor(number):
   for i in xrange(0, 999):
     hosts.append("ssh://node-%3i.very-large-cluster.1e100.net" % i)
   
-  interstate.execute(process_factors, hosts = hosts)
+  eisenhower.execute(process_factors, hosts = hosts)
 
 parallel_factor(1000000007)
 ```
@@ -58,12 +58,12 @@ If the nodes you are using are behind a firewall and require first connecting to
 
 ```python
 
-import interstate
+import eisenhower
 
 def test_forwarded_connection():
   print "It works!"
   
-interstate.execute(test_forwarded_connection,
+eisenhower.execute(test_forwarded_connection,
   host = 'ssh://privateuser@inner-node.local',
   via = 'ssh://publicuser@head-node.very-large-cluster.1e100.net')
 ```
